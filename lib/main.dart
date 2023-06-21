@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:agenda_personal/evento.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -13,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Lista personal",
+      title: "Gestor de actividades",
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
       color: Colors.orange,
@@ -33,10 +34,12 @@ class Agenda extends StatefulWidget {
 
 class _AgendaState extends State<Agenda> {
 
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  String tituloEvento = "";
 
-  List _datos = [];
+  final eventoTextController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  
+  //States
+  List<Evento> _datos = [];
   int _index = 0;
   
   final String fileName = "data.json";
@@ -45,6 +48,7 @@ class _AgendaState extends State<Agenda> {
     return getApplicationDocumentsDirectory();
   }
 
+  
 
 
   Future<void> readJson() async {
@@ -52,7 +56,7 @@ class _AgendaState extends State<Agenda> {
     File file = File("${dir.path}/$fileName");
     String datos;
     if (!file.existsSync()) {
-      file.writeAsStringSync(json.encode({"autoIncrement": 0, "eventos":[]})); // Default values
+      clearData();
       setState(() {
         _datos = [];
         _index = 0;
@@ -62,7 +66,8 @@ class _AgendaState extends State<Agenda> {
       datos = file.readAsStringSync();
       Map data = jsonDecode(datos);
       setState(() {
-        _datos = data["eventos"];
+        List eventos = data["eventos"];
+        _datos = eventos.map((evento) => Evento.fromList(evento["title"], evento["ID"], evento["descripcion"])).toList();
         _index = data["autoIncrement"];
       });
 
@@ -71,7 +76,7 @@ class _AgendaState extends State<Agenda> {
   }
 
   Future<void> eliminarEvento(int id) async {
-    setState(() => _datos = _datos.where((element) => element["ID"] != id).toList());
+    setState(() => _datos = _datos.where((evento) => evento.id != id).toList());
     writeJson();
   }
 
@@ -84,7 +89,7 @@ class _AgendaState extends State<Agenda> {
     file = File("${dir.path}/$fileName");
 
     Map<String, dynamic> jsonFileData = {};
-    jsonFileData["eventos"] = _datos;
+    jsonFileData["eventos"] = _datos.map((evento) => evento.toList()).toList();
     jsonFileData["autoIncrement"] = _index;
 
     file.writeAsStringSync(json.encode(jsonFileData));
@@ -94,6 +99,12 @@ class _AgendaState extends State<Agenda> {
   void initState() {
     super.initState();
     readJson();
+  }
+
+  @override 
+  void dispose() {
+    super.dispose();
+    eventoTextController.dispose();
   }
 
 
@@ -126,6 +137,7 @@ class _AgendaState extends State<Agenda> {
               child: Column(
                 children: [
                   TextFormField(
+                    controller: eventoTextController,
                     decoration: const InputDecoration(hintText: 'Inserte un evento'),
                     validator: (String? value) {
                       if (value == null || value.isEmpty) {
@@ -133,10 +145,10 @@ class _AgendaState extends State<Agenda> {
                       }else if (value.length > 30) {
                         return "Titulo de evento demasiado largo. Maximo 30";
                       }
-                      tituloEvento = value;
                       return null;
                     },
                   ),
+                  
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -171,17 +183,25 @@ class _AgendaState extends State<Agenda> {
                   ]
                 ),
                 margin: const EdgeInsets.only(bottom: 10.0),
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.only(top: 5.0 , bottom: 5.0, left:15.0 , right:10.5 ),
                 width: MediaQuery.of(context).size.width,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("${e['title']}"), 
-                    TextButton(
-                      onPressed: () => eliminarEvento(e['ID']), 
-                      child: const Icon(Icons.delete, color: Colors.white,)
+                      Text(e.title), 
+                      Row(
+                        children: [
+                          TextButton(
+                            onPressed: () => eliminarEvento(e.id), 
+                            child: const Icon(Icons.delete, color: Colors.white,)
+                            ),
+                          TextButton(
+                            onPressed: () {showDialog(context: context, builder: (context) => Center(child: Text("Prueba"),));}, 
+                            child: const Icon(Icons.edit, color: Colors.white))
+                        ],
                       )
-                    ],),
+                    ],
+                  ),
               )).toList(),
             )
             ) :
@@ -200,9 +220,9 @@ class _AgendaState extends State<Agenda> {
 
   void agregarEvento() {
     if (_formKey.currentState!.validate()) {
-      setState(() => _datos.add({"ID": ++_index, "title": tituloEvento}));
-
+      setState(() => _datos.add(Evento(title: eventoTextController.text, id: ++_index)));
       writeJson();
+      eventoTextController.text = "";
     }
   }
 }
