@@ -71,11 +71,7 @@ class _AgendaState extends State<Agenda> {
   }
 
   Future<void> eliminarEvento(int id) async {
-    List filtrado = [];
-    _datos.forEach((evento) {
-      if (evento["ID"] != id) filtrado.add(evento);
-    }); 
-    setState(() => _datos = filtrado);
+    setState(() => _datos = _datos.where((element) => element["ID"] != id).toList());
     writeJson();
   }
 
@@ -97,7 +93,6 @@ class _AgendaState extends State<Agenda> {
   @override
   void initState() {
     super.initState();
-    clearData();
     readJson();
   }
 
