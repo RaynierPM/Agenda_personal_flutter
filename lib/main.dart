@@ -193,7 +193,7 @@ class _AgendaState extends State<Agenda> {
                         children: [
                           TextButton(
                             onPressed: () => eliminarEvento(e.id), 
-                            child: const Icon(Icons.delete, color: Colors.white,)
+                            child: const Icon(Icons.delete, color: Colors.white,) 
                             ),
                           TextButton(
                             onPressed: () {showDialog(context: context, builder: (context) => Center(child: Text("Prueba"),));}, 
