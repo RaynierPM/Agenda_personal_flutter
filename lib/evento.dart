@@ -14,7 +14,5 @@ class Evento {
     };
   }
 
-  static Evento fromList(String title, int id, String descripcion) {
-    return Evento(title: title, id: id, descripcion: descripcion);
-  }
+  factory Evento.fromJson(Map<String, dynamic> json) => Evento(title: json["title"], id: json["ID"], descripcion: json["descripcion"]);
 }
