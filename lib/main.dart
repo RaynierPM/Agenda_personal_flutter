@@ -171,7 +171,7 @@ class _AgendaState extends State<Agenda> {
                         padding: const EdgeInsets.all(15.0),
                         child: ElevatedButton(
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.orange[900]),
-                          onPressed: _datos.length == 0? null: () => generarModal("¿Estás seguro de querer eliminar todo?", () {clearData();}), 
+                          onPressed: _datos.isEmpty? null: () => generarModalEliminar("¿Estás seguro de querer eliminar todo?", () {clearData();}), 
                           child: const Text("Eliminar todo")),
                       )
                     ],
@@ -200,7 +200,7 @@ class _AgendaState extends State<Agenda> {
                       Row(
                         children: [
                           TextButton(
-                            onPressed: () => eliminarEvento(e.id), 
+                            onPressed: () => generarModalEliminar("¿Quiere eliminar este evento?",() {eliminarEvento(e.id);}), 
                             child: const Icon(Icons.delete, color: Colors.white,) 
                             ),
                           
@@ -244,7 +244,7 @@ class _AgendaState extends State<Agenda> {
             side: BorderSide(
               width: 2.0,
             ),
-            borderRadius: BorderRadius.all(Radius.circular(10.0))
+            borderRadius: BorderRadius.all(Radius.circular(15.0))
           ),
           child: Container(
             height: 150,
@@ -308,18 +308,18 @@ class _AgendaState extends State<Agenda> {
       });    
     }//ModalEditar
 
-    void generarModal(String texto, void Function() accion) {
+    void generarModalEliminar(String texto, void Function() accion) {
       showDialog(
         context: context, 
         builder: (context) => Dialog(
-          shape: BeveledRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
             side: const BorderSide(
               width: 2.0
             )
           ),
           child: Container(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(15.0),
             height: 150,
             child: Center(
               child:  Column(
